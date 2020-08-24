@@ -8,3 +8,4 @@ environment:
 
 dependencies:
   path: ^1.7.0
+  _fe_analyzer_shared: ^6.0.0
