@@ -4,6 +4,8 @@ String generateApiClass({
   List<int> availableSizes,
 }) =>
     """
+    // GENERATED CODE - DO NOT MODIFY BY HAND
+    
     import 'dart:math';
     
     import 'package:flutter/material.dart';

@@ -4,7 +4,9 @@ import 'package:path/path.dart';
 
 import 'templates.dart';
 
-File generateDimensFile() {
+const _generatedFileName = 'dimens.g.dart';
+
+File generateDimensFile(String outputDirPath) {
   final files = _getSizeFiles();
 
   final indexOfBaseFile = files.indexWhere(_isBaseFile);
@@ -35,15 +37,23 @@ File generateDimensFile() {
   ].join("\n");
 
   final result = baseClasses + "\n" + inheritors;
-  final dimensFile = File('dimens.dart');
+  final dimensFile = File(_buildOutputPath(outputDirPath));
 
   if (!dimensFile.existsSync()) {
-    dimensFile.createSync();
+    dimensFile.createSync(recursive: true);
   }
 
   dimensFile.writeAsStringSync(result);
 
   return dimensFile;
+}
+
+String _buildOutputPath(String outputDirPath) {
+  if (outputDirPath?.isNotEmpty == true) {
+    return outputDirPath + (outputDirPath.endsWith(Platform.pathSeparator) ? "" : Platform.pathSeparator) + _generatedFileName;
+  } else {
+    return _generatedFileName;
+  }
 }
 
 int _extractSizesFromName(File file) {
@@ -55,9 +65,9 @@ int _extractSizesFromName(File file) {
     } catch (_) {
       print("Malformed filename: ${file.path}");
     }
-  } else {
-    return null;
   }
+
+  return null;
 }
 
 String _generateInheritorClass({

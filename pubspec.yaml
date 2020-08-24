@@ -8,3 +8,4 @@ environment:
 
 dependencies:
   path: ^1.7.0
+  args: ^1.6.0
