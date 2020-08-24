@@ -16,8 +16,8 @@ File generateDimensFile() {
   final availableSizes = {for (final file in files) _extractSizesFromName(file): file}..removeWhere((key, value) => key == null);
 
   final baseValues = _decodeJson(files.removeAt(indexOfBaseFile));
-  final baseStyles = baseValues["textStyles"] as Map<String, dynamic>;
-  final baseSizes = baseValues["sizes"] as Map<String, dynamic>;
+  final baseStyles = baseValues.containsKey("textStyles") ? baseValues["textStyles"] as Map<String, dynamic> : <String, dynamic>{};
+  final baseSizes = baseValues.containsKey("sizes") ? baseValues["sizes"] as Map<String, dynamic> : <String, dynamic>{};
   final baseClasses = _generateBaseClasses(
     availableSizes: availableSizes.keys.toList(),
     textStyleDeclarations: baseStyles,
@@ -66,8 +66,8 @@ String _generateInheritorClass({
   File file,
 }) {
   final values = _decodeJson(file);
-  final styles = values["textStyles"] as Map<String, dynamic>;
-  final sizes = values["sizes"] as Map<String, dynamic>;
+  final styles = values.containsKey("textStyles") ? values["textStyles"] as Map<String, dynamic> : <String, dynamic>{};
+  final sizes = values.containsKey("sizes") ? values["sizes"] as Map<String, dynamic> : <String, dynamic>{};
   return generateInheritorWithSmallestWidthRestriction(
     smallestWidth: currentSize,
     parentSmallestWidth: parentSize,
