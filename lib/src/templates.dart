@@ -1,6 +1,7 @@
 String generateApiClass({
   Map<String, dynamic> textStyleDeclarations,
   Map<String, dynamic> sizeDeclarations,
+  List<int> availableSizes,
 }) =>
     """
     import 'dart:math';
@@ -24,13 +25,14 @@ String generateApiClass({
       }) {
         final textTheme = Theme.of(context).textTheme;
         final screenSize = MediaQuery.of(context).size;
-        final isSmallScreen = min(screenSize.width, screenSize.height) <= 320;
-    
-        final proxy = isSmallScreen ? _DimensSw320(textTheme) : _DimensValues(textTheme);
+        final smallestWidth = min(screenSize.width, screenSize.height);
+        final proxy = _chooseProxy(smallestWidth, textTheme);
         return Dimens._(key: key, child: child, proxy: proxy);
       }
     
       static Dimens of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<Dimens>();
+      
+      ${_generateChoseProxyMethod(availableSizes)}
       
       @override
       bool updateShouldNotify(InheritedWidget oldWidget) => false;
@@ -41,6 +43,37 @@ String generateApiClass({
       ${_buildProxySection(textStyleDeclarations, sizeDeclarations)}
     }
 """;
+
+String _generateChoseProxyMethod(List<int> availableSizes) => """
+  static _DimensValues _chooseProxy(double smallestWidth, TextTheme textTheme) {
+    ${_generateChoseProxyMethodBody(availableSizes)}
+  }
+""";
+
+String _generateChoseProxyMethodBody(List<int> availableSizes) {
+  if (availableSizes?.isEmpty == true) {
+    return "return _DimensValues(textTheme);";
+  } else {
+    final sizes = List.of(availableSizes, growable: false)..sort((a, b) => b.compareTo(a));
+    final conditionalBranches = [for (var i = 0; i < sizes.length; i++) _generateChoseProxyMethodBodyConditionBranch(isFirstBranch: i == 0, size: sizes[i])].join("\n");
+    final defaultBranch = """
+      else {
+        return _DimensValues(textTheme);
+      }
+    """;
+    return conditionalBranches + "\n" + defaultBranch;
+  }
+}
+
+String _generateChoseProxyMethodBodyConditionBranch({
+  bool isFirstBranch,
+  int size,
+}) =>
+    """
+      ${isFirstBranch ? "" : "else "} if (smallestWidth >= $size) {
+        return _DimensValuesSw$size(textTheme);
+      }
+    """;
 
 String generateBaseClass({
   Map<String, dynamic> textStyleDeclarations,
@@ -60,18 +93,27 @@ String generateBaseClass({
 
 String generateInheritorWithSmallestWidthRestriction({
   int smallestWidth,
+  int parentSmallestWidth,
   Map<String, dynamic> textStyleDeclarations,
   Map<String, dynamic> sizeDeclarations,
 }) =>
     """
-    class _DimensSw$smallestWidth extends _DimensValues {
-      _DimensSw$smallestWidth(TextTheme textTheme) : super(textTheme);
+    class _DimensValuesSw$smallestWidth extends ${_buildParentName(smallestWidth: smallestWidth, parentSmallestWidth: parentSmallestWidth)} {
+      _DimensValuesSw$smallestWidth(TextTheme textTheme) : super(textTheme);
     
       ${_buildTextStyleDeclarations(textStyleDeclarations, isOverride: true)}
       
       ${_buildSizeDeclarations(sizeDeclarations, isOverride: true)}
     }
     """;
+
+String _buildParentName({
+  int smallestWidth,
+  int parentSmallestWidth,
+}) {
+  final suffix = parentSmallestWidth != null ? "Sw$parentSmallestWidth" : "";
+  return "_DimensValues$suffix";
+}
 
 String _buildProxySection(
   Map<String, dynamic> styles,
