@@ -3,7 +3,7 @@ library dimens;
 import 'package:dimens/src/generator.dart';
 import 'dart:io';
 
-void main() {
+void generate() {
   print("Generating file from resources");
   final file = generateDimensFile();
 
