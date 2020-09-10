@@ -12,27 +12,27 @@ String generateApiClass({
     
     // ignore_for_file: must_be_immutable
     class Dimens extends InheritedWidget implements _DimensValues {
-      final _DimensValues proxy;
+      _DimensValues _proxy;
     
-      Dimens._({
+      Dimens({
         Key key,
         Widget child,
-        this.proxy,
       }) : super(key: key, child: child);
     
-      factory Dimens.build({
-        Key key,
-        @required BuildContext context,
-        @required Widget child,
-      }) {
+      static Dimens of(BuildContext context) {
+        final instance = context.dependOnInheritedWidgetOfExactType<Dimens>();
+        if (instance._proxy == null) {
+          instance._init(context);
+        }
+        return instance;
+      }
+      
+      void _init(BuildContext context) {
         final textTheme = Theme.of(context).textTheme;
         final screenSize = MediaQuery.of(context).size;
         final smallestWidth = min(screenSize.width, screenSize.height);
-        final proxy = _chooseProxy(smallestWidth, textTheme);
-        return Dimens._(key: key, child: child, proxy: proxy);
+        _proxy = _chooseProxy(smallestWidth, textTheme);
       }
-    
-      static Dimens of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<Dimens>();
       
       ${_generateChoseProxyMethod(availableSizes)}
       
@@ -40,7 +40,7 @@ String generateApiClass({
       bool updateShouldNotify(InheritedWidget oldWidget) => false;
       
       @override
-      TextTheme get textTheme => proxy.textTheme;
+      TextTheme get textTheme => _proxy.textTheme;
     
       ${_buildProxySection(textStyleDeclarations, sizeDeclarations)}
     }
@@ -137,9 +137,9 @@ String _buildSizeDeclarations(
 }) =>
     styles.entries.where((element) => element.value is double).map((e) => _mapSizeEntryToPropertyDeclaration(e, isOverride)).join("\n");
 
-String _mapStyleEntryToProxyCall(MapEntry<String, dynamic> e) => "@override TextStyle get ${e.key} => proxy.${e.key};";
+String _mapStyleEntryToProxyCall(MapEntry<String, dynamic> e) => "@override TextStyle get ${e.key} => _proxy.${e.key};";
 
-String _mapSizeEntryToProxyCall(MapEntry<String, dynamic> e) => "@override double get ${e.key} => proxy.${e.key};";
+String _mapSizeEntryToProxyCall(MapEntry<String, dynamic> e) => "@override double get ${e.key} => _proxy.${e.key};";
 
 String _mapStyleEntryToPropertyDeclaration(MapEntry<String, dynamic> e, [bool isOverride]) => "${isOverride ? "@override" : ""} TextStyle get ${e.key} => textTheme.${e.value};";
 
