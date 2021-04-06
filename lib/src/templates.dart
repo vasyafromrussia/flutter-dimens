@@ -1,3 +1,5 @@
+// @dart=2.9
+
 String generateApiClass({
   Map<String, dynamic> textStyleDeclarations,
   Map<String, dynamic> sizeDeclarations,

@@ -1,3 +1,5 @@
+// @dart=2.9
+
 library dimens;
 
 import 'package:dimens/src/generator.dart';
