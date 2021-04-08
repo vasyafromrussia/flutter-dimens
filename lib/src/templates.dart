@@ -7,6 +7,7 @@ String generateApiClass({
 }) =>
     """
     // GENERATED CODE - DO NOT MODIFY BY HAND
+    // @dart=2.9
     
     import 'dart:math';
     
