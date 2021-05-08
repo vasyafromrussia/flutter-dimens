@@ -1,3 +1,5 @@
+// @dart=2.9
+
 import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart';
