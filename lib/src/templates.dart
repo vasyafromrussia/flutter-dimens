@@ -9,30 +9,40 @@ String generateApiClass({
     import 'dart:math';
     
     import 'package:flutter/material.dart';
-        
-    // ignore_for_file: must_be_immutable
+    
+    class _Lazy<T> {
+      late T _value;
+      var _isInitialized = false;
+    
+      T get value => _value;
+      
+      bool get isInitialized => _isInitialized;
+    
+      void init(T value) {
+        if (!_isInitialized) {
+          _value = value;
+          _isInitialized = true;
+        }
+      }
+    }
+
     class Dimens extends InheritedWidget implements _DimensValues {
-      _DimensValues? _proxy;
+      final _proxy = _Lazy<_DimensValues>();
     
       Dimens({
-        Key key,
-        Widget child,
+        Key? key,
+        required Widget child,
       }) : super(key: key, child: child);
     
-      static Dimens of(BuildContext context) {
+      static Dimens? maybeOf(BuildContext context) {
         final instance = context.dependOnInheritedWidgetOfExactType<Dimens>();
-        if (instance._proxy == null) {
-          instance._init(context);
+        if (instance != null && !instance._proxy.isInitialized) {
+          instance._proxy.init(_chooseProxy(context));
         }
         return instance;
       }
-      
-      void _init(BuildContext context) {
-        final textTheme = Theme.of(context).textTheme;
-        final screenSize = MediaQuery.of(context).size;
-        final smallestWidth = min(screenSize.width, screenSize.height);
-        _proxy = _chooseProxy(smallestWidth, textTheme);
-      }
+        
+      static Dimens of(BuildContext context) => maybeOf(context)!;
       
       ${_generateChoseProxyMethod(availableSizes)}
       
@@ -40,14 +50,18 @@ String generateApiClass({
       bool updateShouldNotify(InheritedWidget oldWidget) => false;
       
       @override
-      TextTheme get textTheme => _proxy.textTheme;
+      TextTheme get textTheme => _proxy.value.textTheme;
     
       ${_buildProxySection(textStyleDeclarations, sizeDeclarations)}
     }
 """;
 
 String _generateChoseProxyMethod(List<int> availableSizes) => """
-  static _DimensValues _chooseProxy(double smallestWidth, TextTheme textTheme) {
+  static _DimensValues _chooseProxy(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final screenSize = MediaQuery.of(context).size;
+    final smallestWidth = min(screenSize.width, screenSize.height);
+    
     ${_generateChoseProxyMethodBody(availableSizes)}
   }
 """;
@@ -136,9 +150,9 @@ String _buildSizeDeclarations(
 }) =>
     styles.entries.where((element) => element.value is double).map((e) => _mapSizeEntryToPropertyDeclaration(e, isOverride: isOverride)).join("\n");
 
-String _mapStyleEntryToProxyCall(MapEntry<String, dynamic> e) => "@override TextStyle get ${e.key} => _proxy.${e.key};";
+String _mapStyleEntryToProxyCall(MapEntry<String, dynamic> e) => "@override TextStyle get ${e.key} => _proxy.value.${e.key};";
 
-String _mapSizeEntryToProxyCall(MapEntry<String, dynamic> e) => "@override double get ${e.key} => _proxy.${e.key};";
+String _mapSizeEntryToProxyCall(MapEntry<String, dynamic> e) => "@override double get ${e.key} => _proxy.value.${e.key};";
 
 String _mapStyleEntryToPropertyDeclaration(MapEntry<String, dynamic> e, {required bool isOverride}) => "${isOverride ? "@override" : ""} TextStyle get ${e.key} => textTheme.${e.value};";
 
