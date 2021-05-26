@@ -1,21 +1,18 @@
-// @dart=2.9
-
 String generateApiClass({
-  Map<String, dynamic> textStyleDeclarations,
-  Map<String, dynamic> sizeDeclarations,
-  List<int> availableSizes,
+  required Map<String, dynamic> textStyleDeclarations,
+  required Map<String, dynamic> sizeDeclarations,
+  required List<int> availableSizes,
 }) =>
     """
     // GENERATED CODE - DO NOT MODIFY BY HAND
-    // @dart=2.9
     
     import 'dart:math';
     
     import 'package:flutter/material.dart';
-    
+        
     // ignore_for_file: must_be_immutable
     class Dimens extends InheritedWidget implements _DimensValues {
-      _DimensValues _proxy;
+      _DimensValues? _proxy;
     
       Dimens({
         Key key,
@@ -56,7 +53,7 @@ String _generateChoseProxyMethod(List<int> availableSizes) => """
 """;
 
 String _generateChoseProxyMethodBody(List<int> availableSizes) {
-  if (availableSizes?.isEmpty == true) {
+  if (availableSizes.isEmpty == true) {
     return "return _DimensValues(textTheme);";
   } else {
     final sizes = List.of(availableSizes, growable: false)..sort((a, b) => b.compareTo(a));
@@ -71,8 +68,8 @@ String _generateChoseProxyMethodBody(List<int> availableSizes) {
 }
 
 String _generateChoseProxyMethodBodyConditionBranch({
-  bool isFirstBranch,
-  int size,
+  required bool isFirstBranch,
+  required int size,
 }) =>
     """
       ${isFirstBranch ? "" : "else "} if (smallestWidth >= $size) {
@@ -81,8 +78,8 @@ String _generateChoseProxyMethodBodyConditionBranch({
     """;
 
 String generateBaseClass({
-  Map<String, dynamic> textStyleDeclarations,
-  Map<String, dynamic> sizeDeclarations,
+  required Map<String, dynamic> textStyleDeclarations,
+  required Map<String, dynamic> sizeDeclarations,
 }) =>
     """
     class _DimensValues {
@@ -97,13 +94,13 @@ String generateBaseClass({
     """;
 
 String generateInheritorWithSmallestWidthRestriction({
-  int smallestWidth,
-  int parentSmallestWidth,
-  Map<String, dynamic> textStyleDeclarations,
-  Map<String, dynamic> sizeDeclarations,
+  required int smallestWidth,
+  int? parentSmallestWidth,
+  required Map<String, dynamic> textStyleDeclarations,
+  required Map<String, dynamic> sizeDeclarations,
 }) =>
     """
-    class _DimensValuesSw$smallestWidth extends ${_buildParentName(smallestWidth: smallestWidth, parentSmallestWidth: parentSmallestWidth)} {
+    class _DimensValuesSw$smallestWidth extends ${_buildParentName(parentSmallestWidth: parentSmallestWidth)} {
       _DimensValuesSw$smallestWidth(TextTheme textTheme) : super(textTheme);
     
       ${_buildTextStyleDeclarations(textStyleDeclarations, isOverride: true)}
@@ -113,8 +110,7 @@ String generateInheritorWithSmallestWidthRestriction({
     """;
 
 String _buildParentName({
-  int smallestWidth,
-  int parentSmallestWidth,
+  int? parentSmallestWidth,
 }) {
   final suffix = parentSmallestWidth != null ? "Sw$parentSmallestWidth" : "";
   return "_DimensValues$suffix";
@@ -132,18 +128,18 @@ String _buildTextStyleDeclarations(
   Map<String, dynamic> styles, {
   bool isOverride = false,
 }) =>
-    styles.entries.where((element) => element.value is String).map((e) => _mapStyleEntryToPropertyDeclaration(e, isOverride)).join("\n");
+    styles.entries.where((element) => element.value is String).map((e) => _mapStyleEntryToPropertyDeclaration(e, isOverride: isOverride)).join("\n");
 
 String _buildSizeDeclarations(
   Map<String, dynamic> styles, {
   bool isOverride = false,
 }) =>
-    styles.entries.where((element) => element.value is double).map((e) => _mapSizeEntryToPropertyDeclaration(e, isOverride)).join("\n");
+    styles.entries.where((element) => element.value is double).map((e) => _mapSizeEntryToPropertyDeclaration(e, isOverride: isOverride)).join("\n");
 
 String _mapStyleEntryToProxyCall(MapEntry<String, dynamic> e) => "@override TextStyle get ${e.key} => _proxy.${e.key};";
 
 String _mapSizeEntryToProxyCall(MapEntry<String, dynamic> e) => "@override double get ${e.key} => _proxy.${e.key};";
 
-String _mapStyleEntryToPropertyDeclaration(MapEntry<String, dynamic> e, [bool isOverride]) => "${isOverride ? "@override" : ""} TextStyle get ${e.key} => textTheme.${e.value};";
+String _mapStyleEntryToPropertyDeclaration(MapEntry<String, dynamic> e, {required bool isOverride}) => "${isOverride ? "@override" : ""} TextStyle get ${e.key} => textTheme.${e.value};";
 
-String _mapSizeEntryToPropertyDeclaration(MapEntry<String, dynamic> e, [bool isOverride]) => "${isOverride ? "@override" : ""} final double ${e.key} = ${e.value};";
+String _mapSizeEntryToPropertyDeclaration(MapEntry<String, dynamic> e, {required bool isOverride}) => "${isOverride ? "@override" : ""} final double ${e.key} = ${e.value};";

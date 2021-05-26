@@ -1,5 +1,3 @@
-// @dart=2.9
-
 import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart';
@@ -8,7 +6,7 @@ import 'templates.dart';
 
 const _generatedFileName = 'dimens.g.dart';
 
-File generateDimensFile(String outputDirPath) {
+File generateDimensFile(String? outputDirPath) {
   final files = _getSizeFiles();
 
   final indexOfBaseFile = files.indexWhere(_isBaseFile);
@@ -17,7 +15,7 @@ File generateDimensFile(String outputDirPath) {
     throw ('File with name \'sizes.json\' which contains base values must exist in assets/sizes directory');
   }
 
-  final availableSizes = {for (final file in files) _extractSizesFromName(file): file}..removeWhere((key, value) => key == null);
+  final availableSizes = ({for (final file in files) _extractSizesFromName(file): file}..removeWhere((key, value) => key == null)).cast<int, File>();
 
   final baseValues = _decodeJson(files.removeAt(indexOfBaseFile));
   final baseStyles = baseValues.containsKey("textStyles") ? baseValues["textStyles"] as Map<String, dynamic> : <String, dynamic>{};
@@ -50,15 +48,15 @@ File generateDimensFile(String outputDirPath) {
   return dimensFile;
 }
 
-String _buildOutputPath(String outputDirPath) {
-  if (outputDirPath?.isNotEmpty == true) {
+String _buildOutputPath(String? outputDirPath) {
+  if (outputDirPath != null && outputDirPath.isNotEmpty) {
     return outputDirPath + (outputDirPath.endsWith(Platform.pathSeparator) ? "" : Platform.pathSeparator) + _generatedFileName;
   } else {
     return _generatedFileName;
   }
 }
 
-int _extractSizesFromName(File file) {
+int? _extractSizesFromName(File file) {
   final nameParts = basenameWithoutExtension(file.path).split('-').sublist(1);
 
   if (nameParts.isNotEmpty && nameParts.first.startsWith('sw')) {
@@ -73,9 +71,9 @@ int _extractSizesFromName(File file) {
 }
 
 String _generateInheritorClass({
-  int currentSize,
-  int parentSize,
-  File file,
+  required int currentSize,
+  int? parentSize,
+  required File file,
 }) {
   final values = _decodeJson(file);
   final styles = values.containsKey("textStyles") ? values["textStyles"] as Map<String, dynamic> : <String, dynamic>{};
@@ -89,9 +87,9 @@ String _generateInheritorClass({
 }
 
 String _generateBaseClasses({
-  Map<String, dynamic> textStyleDeclarations,
-  Map<String, dynamic> sizeDeclarations,
-  List<int> availableSizes,
+  required Map<String, dynamic> textStyleDeclarations,
+  required Map<String, dynamic> sizeDeclarations,
+  required List<int> availableSizes,
 }) =>
     generateApiClass(availableSizes: availableSizes, textStyleDeclarations: textStyleDeclarations, sizeDeclarations: sizeDeclarations) +
     "\n" +

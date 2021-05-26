@@ -1,13 +1,11 @@
-// @dart=2.9
-
 library dimens;
 
 import 'package:dimens/src/generator.dart';
 import 'dart:io';
 
 void generate({
-  String outputDirPath,
-  bool formatOutput,
+  String? outputDirPath,
+  bool formatOutput = false,
 }) {
   print("Generating file from resources");
   final file = generateDimensFile(outputDirPath);
